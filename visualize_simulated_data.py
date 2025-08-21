@@ -1,6 +1,6 @@
 """
-模拟数据可视化脚本
-用于验证生成的模拟数据质量和特征关系
+Simulated Data Visualization Script
+For verifying the quality of generated simulated data and feature relationships
 """
 
 import os
@@ -60,9 +60,9 @@ sns.set_palette("husl")
 
 
 def load_simulated_data(data_path: str) -> pd.DataFrame:
-    """加载模拟数据"""
+    """Load simulated data"""
     if not os.path.exists(data_path):
-        raise FileNotFoundError(f"数据文件不存在: {data_path}")
+        raise FileNotFoundError(f"Data file not found: {data_path}")
     
     df = pd.read_parquet(data_path)
     df['timestamp'] = pd.to_datetime(df['time'], unit='s')
@@ -70,7 +70,7 @@ def load_simulated_data(data_path: str) -> pd.DataFrame:
 
 
 def plot_time_series(df: pd.DataFrame, save_dir: str = "data/visualizations"):
-    """绘制时间序列图"""
+    """Plot time series charts"""
     os.makedirs(save_dir, exist_ok=True)
     
     # 选择主要指标进行可视化

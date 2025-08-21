@@ -46,31 +46,31 @@ def setup_chinese_font():
     
     if available_fonts:
         plt.rcParams['font.sans-serif'] = available_fonts + ['DejaVu Sans']
-        logger.info(f"使用中文字体: {available_fonts[0]}")
+        logger.info(f"Using Chinese font: {available_fonts[0]}")
     else:
-        # 如果没有找到中文字体，使用默认字体并给出警告
+        # If no Chinese fonts found, use default font and give warning
         plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
-        logger.warning("未找到中文字体，图表中的中文可能无法正确显示")
+        logger.warning("Chinese fonts not found, Chinese characters in charts may not display correctly")
     
     plt.rcParams['axes.unicode_minus'] = False
 
-# 初始化中文字体
+# Initialize Chinese font support
 setup_chinese_font()
 
 
 def setup_logging(log_file: str = "logs/training.log", level: str = "INFO"):
     """
-    设置日志配置
+    Setup logging configuration
     
     Args:
-        log_file: 日志文件路径
-        level: 日志级别
+        log_file: Log file path
+        level: Log level
     """
-    # 创建日志目录
+    # Create log directory
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
     
-    # 配置loguru
-    logger.remove()  # 移除默认处理器
+    # Configure loguru
+    logger.remove()  # Remove default handler
     logger.add(
         log_file,
         level=level,
@@ -87,56 +87,56 @@ def setup_logging(log_file: str = "logs/training.log", level: str = "INFO"):
 
 def create_directories(directories: List[str]):
     """
-    创建必要的目录
+    Create necessary directories
     
     Args:
-        directories: 目录路径列表
+        directories: List of directory paths
     """
     for directory in directories:
         os.makedirs(directory, exist_ok=True)
-        logger.info(f"创建目录: {directory}")
+        logger.info(f"Created directory: {directory}")
 
 
 def save_scaler(scaler: StandardScaler, filepath: str):
     """
-    保存StandardScaler到文件
+    Save StandardScaler to file
     
     Args:
-        scaler: 要保存的StandardScaler对象
-        filepath: 保存路径
+        scaler: StandardScaler object to save
+        filepath: Save path
     """
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     with open(filepath, 'wb') as f:
         pickle.dump(scaler, f)
-    logger.info(f"保存StandardScaler到: {filepath}")
+    logger.info(f"StandardScaler saved to: {filepath}")
 
 
 def load_scaler(filepath: str) -> StandardScaler:
     """
-    从文件加载StandardScaler
+    Load StandardScaler from file
     
     Args:
-        filepath: 文件路径
+        filepath: File path
         
     Returns:
-        加载的StandardScaler对象
+        Loaded StandardScaler object
     """
     with open(filepath, 'rb') as f:
         scaler = pickle.load(f)
-    logger.info(f"从文件加载StandardScaler: {filepath}")
+    logger.info(f"StandardScaler loaded from: {filepath}")
     return scaler
 
 
 def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
     """
-    计算评估指标
+    Calculate evaluation metrics
     
     Args:
-        y_true: 真实值
-        y_pred: 预测值
+        y_true: True values
+        y_pred: Predicted values
         
     Returns:
-        包含各种评估指标的字典
+        Dictionary containing various evaluation metrics
     """
     metrics = {
         'mse': mean_squared_error(y_true, y_pred),

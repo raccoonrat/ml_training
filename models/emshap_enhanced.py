@@ -1,7 +1,7 @@
 """
-增强版EMSHAP模型实现
-基于论文"Energy-Based Model for Accurate Estimation of Shapley Values in Feature Attribution"
-实现完整的能量网络、GRU网络、训练算法和Shapley值计算
+Enhanced EMSHAP Model Implementation
+Based on the paper "Energy-Based Model for Accurate Estimation of Shapley Values in Feature Attribution"
+Complete implementation of energy network, GRU network, training algorithm and Shapley value computation
 """
 
 import torch
@@ -16,8 +16,8 @@ from loguru import logger
 
 class AttentionModule(nn.Module):
     """
-    注意力模块
-    用于捕获特征之间的相互作用
+    Attention Module
+    Used to capture interactions between features
     """
     
     def __init__(self, input_dim: int, num_heads: int = 8, dropout: float = 0.1):
@@ -35,12 +35,12 @@ class AttentionModule(nn.Module):
     def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         batch_size, seq_len, _ = x.shape
         
-        # 计算Q, K, V
+        # Compute Q, K, V
         Q = self.query(x).view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
         K = self.key(x).view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
         V = self.value(x).view(batch_size, seq_len, self.num_heads, self.head_dim).transpose(1, 2)
         
-        # 计算注意力分数
+        # Compute attention scores
         scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(self.head_dim)
         
         if mask is not None:
@@ -50,7 +50,7 @@ class AttentionModule(nn.Module):
         attention_weights = F.softmax(scores, dim=-1)
         attention_weights = self.dropout(attention_weights)
         
-        # 应用注意力权重
+        # Apply attention weights
         context = torch.matmul(attention_weights, V)
         context = context.transpose(1, 2).contiguous().view(batch_size, seq_len, -1)
         
@@ -60,8 +60,8 @@ class AttentionModule(nn.Module):
 
 class EnhancedEnergyNetwork(nn.Module):
     """
-    增强版能量网络
-    支持特征子集和条件能量函数
+    Enhanced Energy Network
+    Supports feature subsets and conditional energy functions
     """
     
     def __init__(self, input_dim: int, hidden_dims: List[int] = None, 
@@ -75,16 +75,16 @@ class EnhancedEnergyNetwork(nn.Module):
         self.hidden_dims = hidden_dims
         self.context_dim = context_dim
         
-        # 特征嵌入层
+        # Feature embedding layer
         self.feature_embedding = nn.Linear(input_dim, hidden_dims[0])
         
-        # 注意力模块
+        # Attention module
         self.attention = AttentionModule(hidden_dims[0], num_heads, dropout_rate)
         
-        # 上下文投影
+        # Context projection
         self.context_projection = nn.Linear(context_dim, hidden_dims[0])
         
-        # 主要网络层
+        # Main network layers
         layers = []
         prev_dim = hidden_dims[0]
         
@@ -99,10 +99,10 @@ class EnhancedEnergyNetwork(nn.Module):
         
         self.main_network = nn.Sequential(*layers)
         
-        # 输出层
+        # Output layer
         self.output_layer = nn.Linear(prev_dim, 1)
         
-        # 温度参数（可学习）
+        # Temperature parameter (learnable)
         self.temperature = nn.Parameter(torch.ones(1))
         
         self._init_weights()
@@ -120,45 +120,45 @@ class EnhancedEnergyNetwork(nn.Module):
     def forward(self, x: torch.Tensor, context: torch.Tensor, 
                 feature_mask: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
-        前向传播
+        Forward propagation
         
         Args:
-            x: 输入特征 (batch_size, input_dim)
-            context: 上下文向量 (batch_size, context_dim)
-            feature_mask: 特征掩码 (batch_size, input_dim)
+            x: Input features (batch_size, input_dim)
+            context: Context vector (batch_size, context_dim)
+            feature_mask: Feature mask (batch_size, input_dim)
             
         Returns:
-            能量值 (batch_size, 1)
+            Energy values (batch_size, 1)
         """
         batch_size = x.shape[0]
         
-        # 应用特征掩码
+        # Apply feature mask
         if feature_mask is not None:
             x = x * feature_mask
         
-        # 特征嵌入
+        # Feature embedding
         x_embedded = self.feature_embedding(x)  # (batch_size, hidden_dim)
         
-        # 添加序列维度用于注意力
+        # Add sequence dimension for attention
         x_seq = x_embedded.unsqueeze(1)  # (batch_size, 1, hidden_dim)
         
-        # 应用注意力
+        # Apply attention
         x_attended = self.attention(x_seq)  # (batch_size, 1, hidden_dim)
         x_attended = x_attended.squeeze(1)  # (batch_size, hidden_dim)
         
-        # 上下文投影
+        # Context projection
         context_proj = self.context_projection(context)  # (batch_size, hidden_dim)
         
-        # 合并特征和上下文
+        # Combine features and context
         combined = x_attended + context_proj
         
-        # 主网络
+        # Main network
         features = self.main_network(combined)
         
-        # 输出能量值
+        # Output energy value
         energy = self.output_layer(features)
         
-        # 应用温度缩放
+        # Apply temperature scaling
         energy = energy / self.temperature
         
         return energy
@@ -166,8 +166,8 @@ class EnhancedEnergyNetwork(nn.Module):
 
 class EnhancedGRUNetwork(nn.Module):
     """
-    增强版GRU网络
-    改进提议分布生成和特征提取
+    Enhanced GRU Network
+    Improved proposal distribution generation and feature extraction
     """
     
     def __init__(self, input_dim: int, hidden_dim: int, context_dim: int,
@@ -179,7 +179,7 @@ class EnhancedGRUNetwork(nn.Module):
         self.context_dim = context_dim
         self.num_layers = num_layers
         
-        # 双向GRU
+        # Bidirectional GRU
         self.gru = nn.GRU(
             input_size=input_dim,
             hidden_size=hidden_dim,
@@ -189,7 +189,7 @@ class EnhancedGRUNetwork(nn.Module):
             dropout=dropout_rate if num_layers > 1 else 0
         )
         
-        # 上下文处理
+        # Context processing
         self.context_encoder = nn.Sequential(
             nn.Linear(context_dim, hidden_dim),
             nn.ReLU(),
@@ -197,7 +197,7 @@ class EnhancedGRUNetwork(nn.Module):
             nn.Linear(hidden_dim, hidden_dim)
         )
         
-        # 提议分布参数生成
+        # Proposal distribution parameter generation
         self.proposal_net = nn.Sequential(
             nn.Linear(hidden_dim * 2, hidden_dim),  # *2 for bidirectional
             nn.ReLU(),
@@ -210,10 +210,10 @@ class EnhancedGRUNetwork(nn.Module):
         self.proposal_mean = nn.Linear(hidden_dim // 2, input_dim)
         self.proposal_logvar = nn.Linear(hidden_dim // 2, input_dim)
         
-        # 温度参数
+        # Temperature parameter
         self.temperature = nn.Parameter(torch.ones(1))
         
-        # 上下文输出
+        # Context output
         self.context_output = nn.Linear(hidden_dim * 2, context_dim)
         
         self._init_weights()
@@ -231,45 +231,45 @@ class EnhancedGRUNetwork(nn.Module):
     def forward(self, x: torch.Tensor, mask: torch.Tensor, 
                 context: torch.Tensor = None) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
-        前向传播
+        Forward propagation
         
         Args:
-            x: 输入特征 (batch_size, seq_len, input_dim)
-            mask: 掩码 (batch_size, seq_len, input_dim)
-            context: 上下文向量 (batch_size, context_dim)
+            x: Input features (batch_size, seq_len, input_dim)
+            mask: Mask (batch_size, seq_len, input_dim)
+            context: Context vector (batch_size, context_dim)
             
         Returns:
-            proposal_mean: 提议分布均值
-            proposal_logvar: 提议分布对数方差
-            context_output: 输出上下文向量
+            proposal_mean: Proposal distribution mean
+            proposal_logvar: Proposal distribution log variance
+            context_output: Output context vector
         """
         batch_size, seq_len, _ = x.shape
         
-        # 应用掩码
+        # Apply mask
         masked_x = x * mask
         
-        # 初始化隐藏状态
+        # Initialize hidden state
         if context is not None:
             context_encoded = self.context_encoder(context)
             h0 = context_encoded.unsqueeze(0).repeat(self.num_layers * 2, 1, 1)  # *2 for bidirectional
         else:
             h0 = torch.zeros(self.num_layers * 2, batch_size, self.hidden_dim, device=x.device)
         
-        # GRU前向传播
+        # GRU forward propagation
         gru_output, hidden = self.gru(masked_x, h0)
         
-        # 取最后一个时间步的输出
+        # Get last time step output
         last_output = gru_output[:, -1, :]  # (batch_size, hidden_dim * 2)
         
-        # 生成提议分布参数
+        # Generate proposal distribution parameters
         proposal_features = self.proposal_net(last_output)
         proposal_mean = self.proposal_mean(proposal_features)
         proposal_logvar = self.proposal_logvar(proposal_features)
         
-        # 应用温度缩放
+        # Apply temperature scaling
         proposal_logvar = proposal_logvar / self.temperature
         
-        # 生成上下文向量
+        # Generate context vector
         context_output = self.context_output(last_output)
         
         return proposal_mean, proposal_logvar, context_output
@@ -277,8 +277,8 @@ class EnhancedGRUNetwork(nn.Module):
 
 class EMSHAPEnhanced(nn.Module):
     """
-    增强版EMSHAP模型
-    完整的能量网络和GRU网络实现
+    Enhanced EMSHAP Model
+    Complete implementation of energy network and GRU network
     """
     
     def __init__(self, input_dim: int, gru_hidden_dim: int = 64, 
@@ -293,7 +293,7 @@ class EMSHAPEnhanced(nn.Module):
         if energy_hidden_dims is None:
             energy_hidden_dims = [128, 64, 32]
         
-        # GRU网络
+        # GRU network
         self.gru_net = EnhancedGRUNetwork(
             input_dim=input_dim,
             hidden_dim=gru_hidden_dim,
@@ -302,7 +302,7 @@ class EMSHAPEnhanced(nn.Module):
             dropout_rate=dropout_rate
         )
         
-        # 能量网络
+        # Energy network
         self.energy_net = EnhancedEnergyNetwork(
             input_dim=input_dim,
             hidden_dims=energy_hidden_dims,
@@ -310,7 +310,7 @@ class EMSHAPEnhanced(nn.Module):
             dropout_rate=dropout_rate
         )
         
-        # 初始化权重
+        # Initialize weights
         self._init_weights()
     
     def _init_weights(self):

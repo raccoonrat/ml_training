@@ -1,6 +1,6 @@
 """
-增强版EMSHAP模型训练脚本
-基于论文实现完整的训练流程
+Enhanced EMSHAP Model Training Script
+Complete training pipeline based on the paper implementation
 """
 
 import os
@@ -25,40 +25,40 @@ from utils import setup_logging, create_directories, calculate_metrics
 
 def load_and_preprocess_data(data_path: str) -> tuple:
     """
-    加载和预处理数据
+    Load and preprocess data
     
     Args:
-        data_path: 数据文件路径
+        data_path: Data file path
         
     Returns:
-        特征数据和标签数据
+        Feature data and label data
     """
-    logger.info(f"加载数据: {data_path}")
+    logger.info(f"Loading data: {data_path}")
     
-    # 读取数据
+    # Read data
     df = pd.read_parquet(data_path)
     
-    # 提取特征和标签
+    # Extract features and labels
     features = df[FEATURE_COLUMNS].values
     labels = df[TARGET_COLUMN].values.reshape(-1, 1)
     
-    logger.info(f"数据形状: 特征 {features.shape}, 标签 {labels.shape}")
-    logger.info(f"特征范围: [{features.min():.2f}, {features.max():.2f}]")
-    logger.info(f"标签范围: [{labels.min():.2f}, {labels.max():.2f}]")
+    logger.info(f"Data shape: features {features.shape}, labels {labels.shape}")
+    logger.info(f"Feature range: [{features.min():.2f}, {features.max():.2f}]")
+    logger.info(f"Label range: [{labels.min():.2f}, {labels.max():.2f}]")
     
     return features, labels
 
 
 def create_emshap_model(input_dim: int, config: dict) -> EMSHAPEnhanced:
     """
-    创建EMSHAP模型
+    Create EMSHAP model
     
     Args:
-        input_dim: 输入维度
-        config: 配置参数
+        input_dim: Input dimension
+        config: Configuration parameters
         
     Returns:
-        EMSHAP模型
+        EMSHAP model
     """
     model = EMSHAPEnhanced(
         input_dim=input_dim,
@@ -69,8 +69,8 @@ def create_emshap_model(input_dim: int, config: dict) -> EMSHAPEnhanced:
         dropout_rate=config.get('dropout_rate', 0.1)
     )
     
-    logger.info(f"创建EMSHAP模型: 输入维度 {input_dim}")
-    logger.info(f"模型参数数量: {sum(p.numel() for p in model.parameters()):,}")
+    logger.info(f"Created EMSHAP model: input dimension {input_dim}")
+    logger.info(f"Model parameter count: {sum(p.numel() for p in model.parameters()):,}")
     
     return model
 
@@ -130,19 +130,19 @@ def evaluate_emshap_model(trainer: EMSHAPTrainer, test_features: np.ndarray,
     Returns:
         评估结果
     """
-    logger.info("开始模型评估...")
+    logger.info("Starting model evaluation...")
     
-    # 计算Shapley值
-    logger.info("计算Shapley值...")
+    # Compute Shapley values
+    logger.info("Computing Shapley values...")
     shapley_values = trainer.compute_shapley_values(
         test_features, 
         num_samples=config.get('shapley_samples', 1000)
     )
     
-    # 计算特征重要性
+    # Compute feature importance
     feature_importance = np.mean(np.abs(shapley_values), axis=0)
     
-    # 创建评估结果
+    # Create evaluation results
     evaluation_results = {
         'shapley_values': shapley_values,
         'feature_importance': feature_importance,
@@ -151,8 +151,8 @@ def evaluate_emshap_model(trainer: EMSHAPTrainer, test_features: np.ndarray,
         'test_labels': test_labels
     }
     
-    # 打印特征重要性
-    logger.info("特征重要性排名:")
+    # Print feature importance ranking
+    logger.info("Feature importance ranking:")
     importance_ranking = sorted(
         zip(FEATURE_COLUMNS, feature_importance),
         key=lambda x: x[1],
@@ -177,12 +177,12 @@ def visualize_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     """
     os.makedirs(save_dir, exist_ok=True)
     
-    # 绘制训练历史
-    logger.info("绘制训练历史...")
+    # Plot training history
+    logger.info("Plotting training history...")
     trainer.plot_training_history(os.path.join(save_dir, 'training_history.png'))
     
-    # 绘制特征重要性
-    logger.info("绘制特征重要性...")
+    # Plot feature importance
+    logger.info("Plotting feature importance...")
     feature_importance = evaluation_results['feature_importance']
     feature_names = evaluation_results['feature_names']
     
@@ -196,13 +196,13 @@ def visualize_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     plt.savefig(os.path.join(save_dir, 'feature_importance.png'), dpi=300, bbox_inches='tight')
     plt.close()
     
-    # 绘制Shapley值分布
-    logger.info("绘制Shapley值分布...")
+    # Plot Shapley value distribution
+    logger.info("Plotting Shapley value distribution...")
     shapley_values = evaluation_results['shapley_values']
     
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
     
-    # 前4个重要特征的Shapley值分布
+    # Top 4 important features Shapley value distribution
     top_4_features = feature_importance.argsort()[-4:][::-1]
     
     for i, feature_idx in enumerate(top_4_features):
@@ -219,8 +219,8 @@ def visualize_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     plt.savefig(os.path.join(save_dir, 'shapley_distribution.png'), dpi=300, bbox_inches='tight')
     plt.close()
     
-    # 绘制特征相关性热力图
-    logger.info("绘制特征相关性热力图...")
+    # Plot feature correlation heatmap
+    logger.info("Plotting feature correlation heatmap...")
     test_features = evaluation_results['test_features']
     feature_df = pd.DataFrame(test_features, columns=feature_names)
     correlation_matrix = feature_df.corr()
@@ -234,7 +234,7 @@ def visualize_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     plt.savefig(os.path.join(save_dir, 'feature_correlation.png'), dpi=300, bbox_inches='tight')
     plt.close()
     
-    logger.info(f"可视化结果保存到: {save_dir}")
+    logger.info(f"Visualization results saved to: {save_dir}")
 
 
 def save_results(trainer: EMSHAPTrainer, evaluation_results: dict, 
@@ -281,37 +281,37 @@ def save_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     with open(os.path.join(save_dir, 'evaluation_summary.json'), 'w') as f:
         json.dump(results_summary, f, indent=2, default=str)
     
-    logger.info(f"结果保存到: {save_dir}")
+    logger.info(f"Results saved to: {save_dir}")
 
 
 def main():
-    """主函数"""
-    parser = argparse.ArgumentParser(description='训练增强版EMSHAP模型')
+    """Main function"""
+    parser = argparse.ArgumentParser(description='Train Enhanced EMSHAP Model')
     parser.add_argument('--data-path', type=str, required=True,
-                       help='数据文件路径')
+                       help='Data file path')
     parser.add_argument('--config', type=str, default='config/emshap_config.json',
-                       help='配置文件路径')
+                       help='Configuration file path')
     parser.add_argument('--output-dir', type=str, default='evaluation_results',
-                       help='输出目录')
+                       help='Output directory')
     parser.add_argument('--device', type=str, default='auto',
-                       help='设备 (auto/cpu/cuda)')
+                       help='Device (auto/cpu/cuda)')
     
     args = parser.parse_args()
     
-    # 设置日志
+    # Setup logging
     setup_logging()
-    logger.info("开始增强版EMSHAP模型训练")
+    logger.info("Starting Enhanced EMSHAP model training")
     
-    # 创建目录
+    # Create directories
     create_directories(['checkpoints', 'logs', args.output_dir])
     
-    # 加载配置
+    # Load configuration
     config = {
         'device': args.device,
         'learning_rate': 1e-3,
         'weight_decay': 1e-4,
         'batch_size': 32,
-        'num_epochs': 10,  # 减少训练轮数用于快速测试
+        'num_epochs': 10,  # Reduced epochs for quick testing
         'patience': 5,
         'test_size': 0.2,
         'gru_hidden_dim': 64,
@@ -319,29 +319,29 @@ def main():
         'energy_hidden_dims': [128, 64, 32],
         'gru_layers': 2,
         'dropout_rate': 0.1,
-        'shapley_samples': 100,  # 减少采样数量用于快速测试
+        'shapley_samples': 100,  # Reduced samples for quick testing
         'save_dir': 'checkpoints'
     }
     
-    # 加载数据
+    # Load data
     features, labels = load_and_preprocess_data(args.data_path)
     
-    # 创建模型
+    # Create model
     model = create_emshap_model(len(FEATURE_COLUMNS), config)
     
-    # 训练模型
+    # Train model
     trainer = train_emshap_model(model, features, labels, config)
     
-    # 评估模型
+    # Evaluate model
     evaluation_results = evaluate_emshap_model(trainer, features, labels, config)
     
-    # 可视化结果
+    # Visualize results
     visualize_results(trainer, evaluation_results, args.output_dir)
     
-    # 保存结果
+    # Save results
     save_results(trainer, evaluation_results, args.output_dir)
     
-    logger.info("增强版EMSHAP模型训练完成！")
+    logger.info("Enhanced EMSHAP model training completed!")
 
 
 if __name__ == "__main__":

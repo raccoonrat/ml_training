@@ -1,6 +1,6 @@
 """
-EMSHAP模型训练器
-实现完整的训练算法，包括交替优化、损失计算和评估
+EMSHAP Model Trainer
+Complete training algorithm implementation, including alternating optimization, loss computation and evaluation
 """
 
 import torch
@@ -24,38 +24,38 @@ from .emshap_enhanced import EMSHAPEnhanced, ShapleyCalculator
 
 class EMSHAPTrainer:
     """
-    EMSHAP模型训练器
-    实现论文中的训练算法
+    EMSHAP Model Trainer
+    Implementation of training algorithm from the paper
     """
     
     def __init__(self, model: EMSHAPEnhanced, device: str = 'auto', 
                  learning_rate: float = 1e-3, weight_decay: float = 1e-4):
         """
-        初始化训练器
+        Initialize trainer
         
         Args:
-            model: EMSHAP模型
-            device: 设备
-            learning_rate: 学习率
-            weight_decay: 权重衰减
+            model: EMSHAP model
+            device: Device
+            learning_rate: Learning rate
+            weight_decay: Weight decay
         """
         self.model = model
         self.device = self._get_device(device)
         self.model.to(self.device)
         
-        # 优化器
+        # Optimizer
         self.optimizer = optim.AdamW(
             self.model.parameters(),
             lr=learning_rate,
             weight_decay=weight_decay
         )
         
-        # 学习率调度器
+        # Learning rate scheduler
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
             self.optimizer, mode='min', factor=0.5, patience=10, verbose=True
         )
         
-        # 训练历史
+        # Training history
         self.train_history = {
             'energy_loss': [],
             'kl_loss': [],
@@ -64,14 +64,14 @@ class EMSHAPTrainer:
             'learning_rate': []
         }
         
-        # 最佳模型
+        # Best model
         self.best_val_loss = float('inf')
         self.best_model_state = None
         
-        logger.info(f"EMSHAP训练器初始化完成，设备: {self.device}")
+        logger.info(f"EMSHAP trainer initialized successfully, device: {self.device}")
     
     def _get_device(self, device: str) -> torch.device:
-        """获取设备"""
+        """Get device"""
         if device == 'auto':
             return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         else:
@@ -122,7 +122,7 @@ class EMSHAPTrainer:
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
         
-        logger.info(f"数据准备完成: 训练集 {len(X_train)} 样本, 验证集 {len(X_val)} 样本")
+        logger.info(f"Data preparation completed: training set {len(X_train)} samples, validation set {len(X_val)} samples")
         
         return train_loader, val_loader
     
@@ -300,7 +300,7 @@ class EMSHAPTrainer:
         best_epoch = 0
         patience_counter = 0
         
-        logger.info(f"开始训练，共 {num_epochs} 个epoch")
+        logger.info(f"Starting training for {num_epochs} epochs")
         
         for epoch in range(num_epochs):
             # 训练
@@ -340,20 +340,20 @@ class EMSHAPTrainer:
                     'train_history': self.train_history
                 }, os.path.join(save_dir, 'emshap_best.pth'))
                 
-                logger.info(f"保存最佳模型，验证损失: {val_loss:.4f}")
+                logger.info(f"Saved best model, validation loss: {val_loss:.4f}")
             else:
                 patience_counter += 1
             
-            # 早停
+            # Early stopping
             if patience_counter >= patience:
-                logger.info(f"早停触发，最佳epoch: {best_epoch}")
+                logger.info(f"Early stopping triggered, best epoch: {best_epoch}")
                 break
         
-        # 恢复最佳模型
+        # Restore best model
         if self.best_model_state is not None:
             self.model.load_state_dict(self.best_model_state)
         
-        logger.info(f"训练完成，最佳验证损失: {self.best_val_loss:.4f}")
+        logger.info(f"Training completed, best validation loss: {self.best_val_loss:.4f}")
         
         return self.train_history
     
@@ -366,34 +366,34 @@ class EMSHAPTrainer:
         """
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
         
-        # 损失曲线
-        axes[0, 0].plot(self.train_history['total_loss'], label='训练损失')
-        axes[0, 0].plot(self.train_history['val_loss'], label='验证损失')
-        axes[0, 0].set_title('损失曲线')
+        # Loss curves
+        axes[0, 0].plot(self.train_history['total_loss'], label='Training Loss')
+        axes[0, 0].plot(self.train_history['val_loss'], label='Validation Loss')
+        axes[0, 0].set_title('Loss Curves')
         axes[0, 0].set_xlabel('Epoch')
         axes[0, 0].set_ylabel('Loss')
         axes[0, 0].legend()
         axes[0, 0].grid(True)
         
-        # 能量损失
-        axes[0, 1].plot(self.train_history['energy_loss'], label='能量损失')
-        axes[0, 1].set_title('能量损失')
+        # Energy loss
+        axes[0, 1].plot(self.train_history['energy_loss'], label='Energy Loss')
+        axes[0, 1].set_title('Energy Loss')
         axes[0, 1].set_xlabel('Epoch')
         axes[0, 1].set_ylabel('Energy Loss')
         axes[0, 1].legend()
         axes[0, 1].grid(True)
         
-        # KL损失
-        axes[1, 0].plot(self.train_history['kl_loss'], label='KL损失')
-        axes[1, 0].set_title('KL散度损失')
+        # KL loss
+        axes[1, 0].plot(self.train_history['kl_loss'], label='KL Loss')
+        axes[1, 0].set_title('KL Divergence Loss')
         axes[1, 0].set_xlabel('Epoch')
         axes[1, 0].set_ylabel('KL Loss')
         axes[1, 0].legend()
         axes[1, 0].grid(True)
         
-        # 学习率
-        axes[1, 1].plot(self.train_history['learning_rate'], label='学习率')
-        axes[1, 1].set_title('学习率变化')
+        # Learning rate
+        axes[1, 1].plot(self.train_history['learning_rate'], label='Learning Rate')
+        axes[1, 1].set_title('Learning Rate Changes')
         axes[1, 1].set_xlabel('Epoch')
         axes[1, 1].set_ylabel('Learning Rate')
         axes[1, 1].legend()
@@ -403,80 +403,80 @@ class EMSHAPTrainer:
         
         if save_path:
             plt.savefig(save_path, dpi=300, bbox_inches='tight')
-            logger.info(f"训练历史图保存到: {save_path}")
+            logger.info(f"Training history plot saved to: {save_path}")
         
         plt.show()
     
     def compute_shapley_values(self, data: np.ndarray, num_samples: int = 1000) -> np.ndarray:
         """
-        计算Shapley值
+        Compute Shapley values
         
         Args:
-            data: 输入数据
-            num_samples: 采样数量
+            data: Input data
+            num_samples: Number of samples
             
         Returns:
-            Shapley值
+            Shapley values
         """
         self.model.eval()
         
-        # 创建Shapley计算器
+        # Create Shapley calculator
         calculator = ShapleyCalculator(self.model, num_samples)
         
-        # 转换为张量
+        # Convert to tensor
         data_tensor = torch.FloatTensor(data).to(self.device)
         
-        # 计算Shapley值
+        # Compute Shapley values
         with torch.no_grad():
             shapley_values = calculator.compute_shapley_values(data_tensor)
         
         return shapley_values.cpu().numpy()
     
     def save_model(self, filepath: str):
-        """保存模型"""
+        """Save model"""
         torch.save({
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
             'train_history': self.train_history,
             'best_val_loss': self.best_val_loss
         }, filepath)
-        logger.info(f"模型保存到: {filepath}")
+        logger.info(f"Model saved to: {filepath}")
     
     def load_model(self, filepath: str):
-        """加载模型"""
+        """Load model"""
         checkpoint = torch.load(filepath, map_location=self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.train_history = checkpoint['train_history']
         self.best_val_loss = checkpoint['best_val_loss']
-        logger.info(f"模型从 {filepath} 加载完成")
+        logger.info(f"Model loaded from {filepath}")
 
 
 # 测试代码
 if __name__ == "__main__":
-    # 创建模型
+    # Create model
     model = EMSHAPEnhanced(input_dim=64, gru_hidden_dim=64, context_dim=32)
     
-    # 创建训练器
+    # Create trainer
     trainer = EMSHAPTrainer(model, learning_rate=1e-3)
     
-    # 生成测试数据
+    # Generate test data
     np.random.seed(42)
     data = np.random.randn(1000, 64)
     labels = np.random.randn(1000, 1)
     
-    # 准备数据
+    # Prepare data
     train_loader, val_loader = trainer.prepare_data(data, labels, batch_size=32)
     
-    # 训练模型
+    # Train model
     history = trainer.train(train_loader, val_loader, num_epochs=10)
     
-    # 绘制训练历史
+    # Plot training history
     trainer.plot_training_history()
     
-    # 计算Shapley值
+    # Compute Shapley values
     test_data = np.random.randn(10, 64)
     shapley_values = trainer.compute_shapley_values(test_data)
     
-    print(f"Shapley值形状: {shapley_values.shape}")
-    print(f"Shapley值范围: [{shapley_values.min():.4f}, {shapley_values.max():.4f}]")
+    print(f"Shapley values shape: {shapley_values.shape}")
+    print(f"Shapley values range: [{shapley_values.min():.4f}, {shapley_values.max():.4f}]")
