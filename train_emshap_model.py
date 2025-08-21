@@ -208,7 +208,12 @@ class EMSHAPTrainer:
             掩码张量
         """
         # 创建伯努利分布的掩码
-        mask = torch.bernoulli(torch.full((batch_size, seq_len, input_dim), 1 - mask_rate)).bool()
+        if seq_len == 1:
+            # 对于单时间点数据，创建2D掩码
+            mask = torch.bernoulli(torch.full((batch_size, input_dim), 1 - mask_rate)).bool()
+        else:
+            # 对于序列数据，创建3D掩码
+            mask = torch.bernoulli(torch.full((batch_size, seq_len, input_dim), 1 - mask_rate)).bool()
         return mask.to(self.device)
     
     def compute_mle_loss(self, energy: torch.Tensor, proposal_params: dict, 
