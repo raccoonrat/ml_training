@@ -26,14 +26,14 @@
 
 ml_training/  
 ├── data_pipeline/  
-│   ├── consumer.py         \# Kafka消费者与数据处理  
-│   └── feature_vector_pb2.py \# Protobuf生成的Python代码  
+│   ├── consumer.py         # Kafka消费者与数据处理  
+│   └── feature_vector_pb2.py # Protobuf生成的Python代码  
 ├── models/  
-│   ├── emshap.py           \# EMSHAP模型架构  
-│   └── power_predictor.py  \# 功耗预测模型架构  
-├── train_power_model.py    \# 训练脚本  
-├── train_emshap_model.py   \# 训练脚本  
-├── evaluate.py             \# 模型评估脚本  
+│   ├── emshap.py           # EMSHAP模型架构  
+│   └── power_predictor.py  # 功耗预测模型架构  
+├── train_power_model.py    # 训练脚本  
+├── train_emshap_model.py   # 训练脚本  
+├── evaluate.py             # 模型评估脚本  
 ├── requirements.txt  
 └── Dockerfile
 
@@ -57,12 +57,14 @@ ml_training/
 
 1. **加载数据**: 从数据存储区读取预处理好的数据。
   
-2. **定义模型**: 在 models/power\_predictor.py 中定义一个简单的 MLP 模型。\# models/power\_predictor.pyimport torch.nn as nnclass PowerPredictor(nn.Module):
+2. **定义模型**: 在 models/power_predictor.py 中定义一个简单的 MLP 模型。# models/power_predictor.py
+```python
+import torch.nn as nnclass PowerPredictor(nn.Module):
   
-      def \_\_init\_\_(self, input\_dim):  
-          super(PowerPredictor, self).\_\_init\_\_()  
-          self.net \= nn.Sequential(  
-              nn.Linear(input\_dim, 128),  
+      def __init__(self, input_dim):  
+          super(PowerPredictor, self).__init__()  
+          self.net = nn.Sequential(  
+              nn.Linear(input_dim, 128),  
               nn.ReLU(),  
               nn.Linear(128, 64),  
               nn.ReLU(),  
@@ -70,7 +72,7 @@ ml_training/
           )  
       def forward(self, x):  
           return self.net(x)
-  
+  ```
 3. **训练循环**:
   
   * **损失函数**: 均方误差 nn.MSELoss()。
@@ -79,7 +81,7 @@ ml_training/
 4. **导出 ONNX**:
   
   * 训练完成后，将模型设置为评估模式 (model.eval())。
-  * 使用 torch.onnx.export 函数将模型导出为 power\_predictor.onnx。
+  * 使用 torch.onnx.export 函数将模型导出为 power_predictor.onnx。
 
 ### **3.2 EMSHAP 模型 (train_emshap_model.py)**
 
@@ -87,51 +89,51 @@ ml_training/
 
 1. **加载数据**: 同上。
   
-2. **定义模型**: 在 models/emshap.py 中定义论文描述的复合模型结构。\# models/emshap.pyimport torchimport torch.nn as nn\# 能量网络class EnergyNetwork(nn.Module):
+2. **定义模型**: 在 models/emshap.py 中定义论文描述的复合模型结构。# models/emshap.pyimport torchimport torch.nn as nn# 能量网络class EnergyNetwork(nn.Module):
   
-      \# ... 实现带 Skip Connection 的 MLP ...
+      # ... 实现带 Skip Connection 的 MLP ...
   
-  \# GRU 网络class GRUNetwork(nn.Module):
+  # GRU 网络class GRUNetwork(nn.Module):
   
-      \# ... 实现 GRU 网络，输出提议分布的参数（均值、方差）和上下文向量 ...
+      # ... 实现 GRU 网络，输出提议分布的参数（均值、方差）和上下文向量 ...
   
-  \# 完整的 EMSHAP 模型class EMSHAP(nn.Module):
-  
-      def \_\_init\_\_(self, input\_dim, gru\_hidden\_dim, context\_dim):  
-          super(EMSHAP, self).\_\_init\_\_()  
-          self.gru\_net \= GRUNetwork(...)  
-          self.energy\_net \= EnergyNetwork(...)
+  # 完整的 EMSHAP 模型class EMSHAP(nn.Module):
+  ```python
+      def __init__(self, input_dim, gru_hidden_dim, context_dim):  
+          super(EMSHAP, self).__init__()  
+          self.gru_net = GRUNetwork(...)  
+          self.energy_net = EnergyNetwork(...)
       
       def forward(self, x, mask):  
-          \# ... 实现完整的前向传播逻辑 ...  
-          \# GRU 处理被掩码的输入，生成提议分布参数  
-          \# 能量网络处理完整输入和上下文向量，生成能量值  
-          return energy, proposal\_params
+          # ... 实现完整的前向传播逻辑 ...  
+          # GRU 处理被掩码的输入，生成提议分布参数  
+          # 能量网络处理完整输入和上下文向量，生成能量值  
+          return energy, proposal_params
+  ```
+3. **实现动态掩码**: 在训练循环的 DataLoader 部分实现。# 在 train_emshap_model.py 的训练循环中# 动态计算当前 epoch 的掩码率mask_rate = min_mask_rate \+ (max_mask_rate \- min_mask_rate) \* (current_epoch / total_epochs)for batch_data in data_loader:
   
-3. **实现动态掩码**: 在训练循环的 DataLoader 部分实现。\# 在 train\_emshap\_model.py 的训练循环中\# 动态计算当前 epoch 的掩码率mask\_rate \= min\_mask\_rate \+ (max\_mask\_rate \- min\_mask\_rate) \* (current\_epoch / total\_epochs)for batch\_data in data\_loader:
-  
-      \# 1\. 根据 mask\_rate 生成一个伯努利分布的掩码张量  
-      mask \= torch.bernoulli(torch.full\_like(batch\_data, 1 \- mask\_rate)).bool()
+      # 1\. 根据 mask_rate 生成一个伯努利分布的掩码张量  
+      mask = torch.bernoulli(torch.full_like(batch_data, 1 \- mask_rate)).bool()
       
-      \# 2\. 将掩码应用于数据  
-      masked\_data \= batch\_data.masked\_fill(mask, 0\) \# 用0填充被掩码的位置
+      # 2\. 将掩码应用于数据  
+      masked_data = batch_data.masked_fill(mask, 0\) # 用0填充被掩码的位置
       
-      \# 3\. 将 masked\_data 和原始 batch\_data 传入模型  
-      optimizer.zero\_grad()  
-      energy, proposal\_params \= model(batch\_data, masked\_data)
+      # 3\. 将 masked_data 和原始 batch_data 传入模型  
+      optimizer.zero_grad()  
+      energy, proposal_params = model(batch_data, masked_data)
       
-      \# 4\. 根据论文公式(14)计算损失  
-      loss \= calculate\_mle\_loss(energy, proposal\_params, batch\_data)  
+      # 4\. 根据论文公式(14)计算损失  
+      loss = calculate_mle_loss(energy, proposal_params, batch_data)  
       loss.backward()  
       optimizer.step()
   
-4. **导出 ONNX**: 同样，在训练收敛后，将 EMSHAP 模型导出为 emshap\_model.onnx。
+4. **导出 ONNX**: 同样，在训练收敛后，将 EMSHAP 模型导出为 emshap_model.onnx。
   
 
 ## **4\. 步骤 3: 自动化 CI/CD 流水线**
 
 这是将上述手动步骤串联起来，实现 MLOps 的关键。
-
+```mermaid
     %%{init: { 
             "theme": "base", 
             "themeVariables": { 
@@ -192,24 +194,24 @@ ml_training/
         class E accentNode;
         class G,G1,G2,G3 storageNode;
         class H errorNode;
-    
+```    
     
 
 **流水线阶段详解:**
 
-1. **触发 (Trigger)**: 当 ml\_training 代码仓库的 main 分支接收到新的 push 事件时自动触发。
-2. **构建 (Build)**: 使用 ml\_training 目录下的 Dockerfile 构建一个包含所有依赖和脚本的 Docker 镜像，并推送到镜像仓库。
+1. **触发 (Trigger)**: 当 ml_training 代码仓库的 main 分支接收到新的 push 事件时自动触发。
+2. **构建 (Build)**: 使用 ml_training 目录下的 Dockerfile 构建一个包含所有依赖和脚本的 Docker 镜像，并推送到镜像仓库。
 3. **执行 (Execute)**: 启动一个该镜像的容器实例。容器的入口命令会依次执行：
-  * python data\_pipeline/consumer.py (可以配置为运行一段时间或处理一定量的数据)。
-  * python train\_power\_model.py。
-  * python train\_emshap\_model.py。
+  * python data_pipeline/consumer.py (可以配置为运行一段时间或处理一定量的数据)。
+  * python train_power_model.py。
+  * python train_emshap_model.py。
 4. **评估 (Evaluate)**:
   * 执行 evaluate.py 脚本。
   * 该脚本加载刚刚生成的 .onnx 模型和一个预留的测试数据集。
   * 计算关键性能指标（KPIs），例如功耗预测模型的 MSE、EMSHAP 模型的验证集损失。
   * 将这些 KPIs 与存储在模型仓库中、当前生产模型对应的 KPIs 进行比较。**只有当新模型的表现优于或持平于旧模型时，流水线才继续**。
 5. **发布 (Publish)**:
-  * 如果评估通过，将三个关键产物 (emshap\_model.onnx, power\_predictor.onnx, scaler.pkl) 打包。
+  * 如果评估通过，将三个关键产物 (emshap_model.onnx, power_predictor.onnx, scaler.pkl) 打包。
   * 使用版本标识（如 Git Commit SHA）上传到 MinIO/S3 的指定存储桶中。
 6. **部署 (Deploy)**:
   * 流水线的最后一步是触发对生产环境中 Attribution Service 的部署更新。这通常通过调用 Kubernetes API、执行 kubectl rollout restart 命令或触发 ArgoCD/Flux 等 GitOps 工具的同步来完成。
@@ -219,6 +221,6 @@ ml_training/
 为了让 Go 服务能够无缝地使用新模型，需要进行以下配置：
 
 * **模型下载**: 在 Attribution Service 的 Kubernetes Deployment 配置中，使用 **Init Container**。这个初始化容器会在主应用容器启动前运行，其唯一任务就是从 MinIO/S3 下载最新版本的三个产物，并将它们放置到一个主容器可以访问的共享 EmptyDir 卷中。
-* **配置路径**: Go 服务代码中加载模型的路径 (/models/emshap\_model.onnx 等) 应指向这个共享卷。通过这种方式，Go 应用本身无需关心模型的来源和版本，只管从固定路径加载即可。
+* **配置路径**: Go 服务代码中加载模型的路径 (/models/emshap_model.onnx 等) 应指向这个共享卷。通过这种方式，Go 应用本身无需关心模型的来源和版本，只管从固定路径加载即可。
 
 通过以上四个步骤，您就建立了一个从数据到模型、从训练到上线的全自动化、可重复、可追溯的完整 MLOps 流程。
