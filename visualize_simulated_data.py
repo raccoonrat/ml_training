@@ -13,8 +13,46 @@ import json
 from loguru import logger
 
 # 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans']
-plt.rcParams['axes.unicode_minus'] = False
+def setup_chinese_font():
+    """设置中文字体支持"""
+    import platform
+    import matplotlib.font_manager as fm
+    
+    system = platform.system()
+    
+    if system == 'Windows':
+        # Windows系统字体
+        font_names = ['Microsoft YaHei', 'SimHei', 'SimSun', 'KaiTi', 'FangSong']
+    elif system == 'Darwin':  # macOS
+        # macOS系统字体
+        font_names = ['PingFang SC', 'Hiragino Sans GB', 'STHeiti', 'Arial Unicode MS']
+    else:  # Linux
+        # Linux系统字体
+        font_names = ['WenQuanYi Micro Hei', 'DejaVu Sans', 'Liberation Sans']
+    
+    # 查找可用的中文字体
+    available_fonts = []
+    for font_name in font_names:
+        try:
+            font_path = fm.findfont(fm.FontProperties(family=font_name))
+            if font_path != fm.rcParams['font.sans-serif']:
+                available_fonts.append(font_name)
+                break
+        except:
+            continue
+    
+    if available_fonts:
+        plt.rcParams['font.sans-serif'] = available_fonts + ['DejaVu Sans']
+        logger.info(f"使用中文字体: {available_fonts[0]}")
+    else:
+        # 如果没有找到中文字体，使用默认字体并给出警告
+        plt.rcParams['font.sans-serif'] = ['DejaVu Sans']
+        logger.warning("未找到中文字体，图表中的中文可能无法正确显示")
+    
+    plt.rcParams['axes.unicode_minus'] = False
+
+# 设置中文字体
+setup_chinese_font()
 
 # 设置图表样式
 plt.style.use('seaborn-v0_8')
