@@ -13,25 +13,74 @@
 
 这种架构兼顾了研究/训练的灵活性和在线服务的性能与稳定性。
 
-    %%{init: { 
-            "theme": "base", 
-            "themeVariables": { 
-                "clusterBkg": "#f8f9fa", 
-                "clusterBorder": "#e1e4e8" 
-            } 
-        }}%%
-    graph TD
-        %% 样式定义
-        classDef baseNode fill:#ffffff,stroke:#68ACD4,stroke-width:1.5px,rx:8,ry:8,font-family:Arial,font-size:12px,color:#333,font-weight:bold
-        classDef accentNode fill:#1D50A2,stroke:#163E7A,stroke-width:1.5px,rx:8,ry:8,font-family:Arial,font-size:12px,color:#ffffff,font-weight:bold
-        classDef storageNode fill:#E7F3F5,stroke:#108A95,stroke-width:1.5px,rx:8,ry:8,font-family:Arial,font-size:12px,color:#333,font-weight:bold
-        classDef subgraphStyle rx:10,ry:10,padding:25px
-        classDef subgraphTitle fill:none,stroke:none,font-weight:bold,font-size:15px,color:#1D50A2
-    
-        subgraph sg1 [离线训练平台 Python]
-            direction LR
-            class sg1 subgraphStyle
-            A[ Kafka Consumer]:::baseNode        B[ 数据清洗与特征工程]:::baseNode        C{ EmSHAP 模型训练}:::accentNode        D[ 导出为 ONNX 模型]:::baseNode        E[ 模型仓库 如 S3/MinIO]:::storageNode        A --> B;        B --> C;        C -- "应用动态掩码机制" --> C;        C --> D;        D --> E;    end    class sg1 subgraphTitle    %% 两个子图之间添加垂直空间    sg1 -->|模型流转| sg2    subgraph sg2 [在线归因服务 Go]        direction LR        class sg2 subgraphStyle        F[ Attribution Service 启动]:::baseNode        G{ 从模型仓库加载 ONNX 模型}:::baseNode        H[ ONNX Runtime 内存中]:::accentNode        I[ gRPC Server: GetAttribution]:::baseNode        J[ 推理逻辑]:::baseNode        K[ 返回归因结果]:::baseNode        F --> G;        G --> H;        I -- "收到请求" --> J;        J -- "调用模型" --> H;        H -- "返回推理结果" --> J;        J -- "计算Shapley值" --> K;        I --> K;    end    class sg2 subgraphTitle    %% 数据流向样式    linkStyle default stroke:#1D50A2,stroke-width:2px    linkStyle 2 stroke:#FF5733,stroke-width:2px      linkStyle 7 stroke:#FF5733,stroke-width:2px      linkStyle 8 stroke:#FF5733,stroke-width:2px      linkStyle 9 stroke:#68ACD4,stroke-dasharray:5,5,stroke-width:1.5px     %% 节点分类    class A,B,D,F,G,I,J,K baseNode;    class C,H accentNode;    class E storageNode;
+```mermaid
+%%{init: { 
+        "theme": "base", 
+        "themeVariables": { 
+            "clusterBkg": "#f8f9fa", 
+            "clusterBorder": "#e1e4e8" 
+        } 
+    }}%%
+graph TD
+    %% 样式定义
+    classDef baseNode fill:#ffffff,stroke:#68ACD4,stroke-width:1.5px,rx:8,ry:8,font-family:Arial,font-size:12px,color:#333,font-weight:bold
+    classDef accentNode fill:#1D50A2,stroke:#163E7A,stroke-width:1.5px,rx:8,ry:8,font-family:Arial,font-size:12px,color:#ffffff,font-weight:bold
+    classDef storageNode fill:#E7F3F5,stroke:#108A95,stroke-width:1.5px,rx:8,ry:8,font-family:Arial,font-size:12px,color:#333,font-weight:bold
+    classDef subgraphStyle rx:10,ry:10,padding:25px
+    classDef subgraphTitle fill:none,stroke:none,font-weight:bold,font-size:15px,color:#1D50A2
+
+    subgraph sg1 [离线训练平台 Python]
+        direction LR
+        class sg1 subgraphStyle
+        A[<fa:fa-download> Kafka Consumer]:::baseNode
+        B[<fa:fa-filter> 数据清洗与特征工程]:::baseNode
+        C{<fa:fa-cogs> EmSHAP 模型训练}:::accentNode
+        D[<fa:fa-file-export> 导出为 ONNX 模型]:::baseNode
+        E[<fa:fa-archive> 模型仓库 如 S3/MinIO]:::storageNode
+
+        A --> B;
+        B --> C;
+        C -- "应用动态掩码机制" --> C;
+        C --> D;
+        D --> E;
+    end
+    class sg1 subgraphTitle
+
+    %% 两个子图之间添加垂直空间
+    sg1 -->|模型流转| sg2
+
+    subgraph sg2 [在线归因服务 Go]
+        direction LR
+        class sg2 subgraphStyle
+        F[<fa:fa-power-off> Attribution Service 启动]:::baseNode
+        G{<fa:fa-download> 从模型仓库加载 ONNX 模型}:::baseNode
+        H[<fa:fa-brain> ONNX Runtime 内存中]:::accentNode
+        I[<fa:fa-server> gRPC Server: GetAttribution]:::baseNode
+        J[<fa:fa-calculator> 推理逻辑]:::baseNode
+        K[<fa:fa-file-import> 返回归因结果]:::baseNode
+
+        F --> G;
+        G --> H;
+        I -- "收到请求" --> J;
+        J -- "调用模型" --> H;
+        H -- "返回推理结果" --> J;
+        J -- "计算Shapley值" --> K;
+        I --> K;
+    end
+    class sg2 subgraphTitle
+
+    %% 数据流向样式
+    linkStyle default stroke:#1D50A2,stroke-width:2px
+    linkStyle 2 stroke:#FF5733,stroke-width:2px  
+    linkStyle 7 stroke:#FF5733,stroke-width:2px  
+    linkStyle 8 stroke:#FF5733,stroke-width:2px  
+    linkStyle 9 stroke:#68ACD4,stroke-dasharray:5,5,stroke-width:1.5px 
+
+    %% 节点分类
+    class A,B,D,F,G,I,J,K baseNode;
+    class C,H accentNode;
+    class E storageNode;
+
     
 
 ## **2\. EmSHAP 模型实现 (internal/attribution/ebm)**
@@ -67,20 +116,48 @@ import ( "github.com/ortgo/onnxruntime" // 示例ONNX Runtime库 "xai\_energy\_s
 
 这是实现论文核心算法的关键部分。它将调用PredictEnergyContribution来估算不同特征子集的贡献函数v(S)，最终算出每个特征的Shapley值。
 
-    %%{init: { 
-            "theme": "base", 
-            "themeVariables": { 
-                "actorBkg": "#f8f9fa", 
-                "actorBorder": "#e1e4e8", 
-                "messageArrowColor": "#1D50A2", 
-                "lifeLineColor": "#68ACD4", 
-                "lifeLineTextColor": "#333" 
-            } 
-        }}%%
-    sequenceDiagram
-        title Shapley值计算流程
-    
-        participant GetAttribution as  gRPC Handler    participant ShapleyCalc as  CalculateShapleyValue    participant EmSHAPModel as  EBM模型    participant MonteCarlo as  蒙特卡洛采样    GetAttribution->>ShapleyCalc: CalculateShapleyValue(baseVector)    Note right of ShapleyCalc: 循环遍历所有特征子集 S    loop 对每个特征 i        ShapleyCalc->>ShapleyCalc: 生成包含 i 的子集 S ∪ {i}        ShapleyCalc->>ShapleyCalc: 生成不含 i 的子集 S        ShapleyCalc->>MonteCarlo: 估算 v(S ∪ {i})        MonteCarlo->>EmSHAPModel: PredictEnergyContribution(maskedVector)        EmSHAPModel-->>MonteCarlo: 返回能量和提议分布        MonteCarlo-->>ShapleyCalc: 返回 v(S ∪ {i}) 的估算值        ShapleyCalc->>MonteCarlo: 估算 v(S)        MonteCarlo->>EmSHAPModel: PredictEnergyContribution(maskedVector)        EmSHAPModel-->>MonteCarlo: 返回能量和提议分布        MonteCarlo-->>ShapleyCalc: 返回 v(S) 的估算值        ShapleyCalc->>ShapleyCalc: 累加边际贡献 v(S ∪ {i}) - v(S)    end    ShapleyCalc->>ShapleyCalc: 根据公式(1)加权平均，得到phi_i    ShapleyCalc-->>GetAttribution: 返回所有特征的Shapley值
+```mermaid
+%%{init: { 
+        "theme": "base", 
+        "themeVariables": { 
+            "actorBkg": "#f8f9fa", 
+            "actorBorder": "#e1e4e8", 
+            "messageArrowColor": "#1D50A2", 
+            "lifeLineColor": "#68ACD4", 
+            "lifeLineTextColor": "#333" 
+        } 
+    }}%%
+sequenceDiagram
+    title Shapley值计算流程
+
+    participant GetAttribution as <fa:fa-server> gRPC Handler
+    participant ShapleyCalc as <fa:fa-calculator> CalculateShapleyValue
+    participant EmSHAPModel as <fa:fa-brain> EBM模型
+    participant MonteCarlo as <fa:fa-random> 蒙特卡洛采样
+
+    GetAttribution->>ShapleyCalc: CalculateShapleyValue(baseVector)
+    Note right of ShapleyCalc: 循环遍历所有特征子集 S
+
+    loop 对每个特征 i
+        ShapleyCalc->>ShapleyCalc: 生成包含 i 的子集 S ∪ {i}
+        ShapleyCalc->>ShapleyCalc: 生成不含 i 的子集 S
+
+        ShapleyCalc->>MonteCarlo: 估算 v(S ∪ {i})
+        MonteCarlo->>EmSHAPModel: PredictEnergyContribution(maskedVector)
+        EmSHAPModel-->>MonteCarlo: 返回能量和提议分布
+        MonteCarlo-->>ShapleyCalc: 返回 v(S ∪ {i}) 的估算值
+
+        ShapleyCalc->>MonteCarlo: 估算 v(S)
+        MonteCarlo->>EmSHAPModel: PredictEnergyContribution(maskedVector)
+        EmSHAPModel-->>MonteCarlo: 返回能量和提议分布
+        MonteCarlo-->>ShapleyCalc: 返回 v(S) 的估算值
+
+        ShapleyCalc->>ShapleyCalc: 累加边际贡献 v(S ∪ {i}) - v(S)
+    end
+
+    ShapleyCalc->>ShapleyCalc: 根据公式(1)加权平均，得到phi_i
+    ShapleyCalc-->>GetAttribution: 返回所有特征的Shapley值
+
     
 
 这个过程的核心是估算贡献函数 $v(S) = E[f(x) | x_S = x_S^t]$ 。根据论文的公式(6)，这通过蒙特卡洛采样实现：

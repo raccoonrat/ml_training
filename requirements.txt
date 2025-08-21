@@ -1,0 +1,39 @@
+# 核心机器学习库
+torch>=2.0.0
+torchvision>=0.15.0
+numpy>=1.21.0
+pandas>=1.3.0
+scikit-learn>=1.0.0
+
+# 数据处理和存储
+pyarrow>=10.0.0
+feather-format>=0.4.1
+
+# Kafka和消息队列
+confluent-kafka>=2.0.0
+
+# Protobuf支持
+protobuf>=4.21.0
+
+# ONNX支持
+onnx>=1.13.0
+onnxruntime>=1.13.0
+
+# 数据可视化
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# 配置管理
+pyyaml>=6.0
+
+# 日志和监控
+loguru>=0.6.0
+
+# 测试框架
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# 开发工具
+black>=22.0.0
+flake8>=5.0.0
+isort>=5.10.0

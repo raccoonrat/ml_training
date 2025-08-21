@@ -39,8 +39,8 @@ ml_training/
 
 **consumer.py 核心逻辑:**
 
-1. **连接 Kafka**: 使用 confluent\_kafka 库创建一个消费者，订阅 raw\_metrics 主题。
-2. **反序列化**: 每条消息都是 Protobuf 序列化的 FeatureVector。使用 feature\_vector\_pb2.py (由 .proto 文件生成) 将其解析为 Python 对象。
+1. **连接 Kafka**: 使用 confluent_kafka 库创建一个消费者，订阅 raw_metrics 主题。
+2. **反序列化**: 每条消息都是 Protobuf 序列化的 FeatureVector。使用 feature_vector_pb2.py (由 .proto 文件生成) 将其解析为 Python 对象。
 3. **数据转换**: 将解析后的数据转换为 Pandas DataFrame 或 NumPy 数组，以便于处理。
 4. **特征缩放**:
   * 在首次运行时，对数据集进行拟合（fit）一个 StandardScaler (来自 scikit-learn)，并将这个 scaler 对象序列化保存到磁盘（例如 scaler.pkl）。
@@ -51,7 +51,7 @@ ml_training/
 
 现在我们为两个模型分别创建训练脚本。
 
-### **3.1 功耗预测模型 (train\_power\_model.py)**
+### **3.1 功耗预测模型 (train_power_model.py)**
 
 这是一个标准的监督学习任务。
 
@@ -81,7 +81,7 @@ ml_training/
   * 训练完成后，将模型设置为评估模式 (model.eval())。
   * 使用 torch.onnx.export 函数将模型导出为 power\_predictor.onnx。
 
-### **3.2 EMSHAP 模型 (train\_emshap\_model.py)**
+### **3.2 EMSHAP 模型 (train_emshap_model.py)**
 
 这是实现论文核心逻辑的部分。
 
