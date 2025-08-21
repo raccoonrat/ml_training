@@ -4,7 +4,7 @@
 """
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Any
 
 
@@ -99,10 +99,10 @@ class TrainingConfig:
 @dataclass
 class Config:
     """主配置类"""
-    kafka: KafkaConfig = KafkaConfig()
-    data: DataConfig = DataConfig()
-    model: ModelConfig = ModelConfig()
-    training: TrainingConfig = TrainingConfig()
+    kafka: KafkaConfig = field(default_factory=KafkaConfig)
+    data: DataConfig = field(default_factory=DataConfig)
+    model: ModelConfig = field(default_factory=ModelConfig)
+    training: TrainingConfig = field(default_factory=TrainingConfig)
     
     def __post_init__(self):
         """初始化默认值"""
