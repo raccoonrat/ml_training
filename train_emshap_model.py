@@ -22,7 +22,7 @@ from utils import (
     count_parameters, get_device, set_seed, format_time
 )
 from models.emshap import EMSHAP, create_emshap_model
-from data_pipeline.feature_vector_pb2 import FEATURE_COLUMNS, TARGET_COLUMN, METADATA_COLUMNS
+from data_pipeline.feature_vector import FEATURE_COLUMNS, TARGET_COLUMN, METADATA_COLUMNS
 
 
 class EMSHAPTrainer:

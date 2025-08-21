@@ -15,7 +15,7 @@ from loguru import logger
 
 from config import config
 from utils import setup_logging, create_directories, calculate_metrics, plot_predictions
-from data_pipeline.feature_vector_pb2 import FEATURE_COLUMNS, TARGET_COLUMN, METADATA_COLUMNS
+from data_pipeline.feature_vector import FEATURE_COLUMNS, TARGET_COLUMN, METADATA_COLUMNS
 
 
 class ModelEvaluator:

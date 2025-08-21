@@ -22,7 +22,7 @@ from utils import (
     early_stopping, count_parameters, get_device, set_seed, format_time
 )
 from models.power_predictor import PowerPredictor, create_power_predictor
-from data_pipeline.feature_vector_pb2 import FEATURE_COLUMNS, TARGET_COLUMN, METADATA_COLUMNS
+from data_pipeline.feature_vector import FEATURE_COLUMNS, TARGET_COLUMN, METADATA_COLUMNS
 
 
 class PowerModelTrainer:
