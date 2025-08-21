@@ -4,7 +4,7 @@
 """
 
 from .consumer import KafkaConsumer
-from .feature_vector_pb2 import FeatureVector
+from .feature_vector import FeatureVector
 
 __all__ = [
     'KafkaConsumer',

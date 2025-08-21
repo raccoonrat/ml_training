@@ -14,7 +14,7 @@ from sklearn.preprocessing import StandardScaler
 from loguru import logger
 import pickle
 
-from .feature_vector_pb2 import FeatureVector, feature_vector_to_dict, FEATURE_COLUMNS, TARGET_COLUMN, METADATA_COLUMNS
+from .feature_vector import FeatureVector, feature_vector_to_dict, FEATURE_COLUMNS, TARGET_COLUMN, METADATA_COLUMNS
 from config import config
 from utils import setup_logging, create_directories, save_scaler
 

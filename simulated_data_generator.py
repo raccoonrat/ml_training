@@ -14,7 +14,7 @@ import json
 from dataclasses import dataclass, asdict
 from loguru import logger
 
-from data_pipeline.feature_vector_pb2 import FeatureVector, feature_vector_to_dict
+from data_pipeline.feature_vector import FeatureVector, feature_vector_to_dict
 
 
 @dataclass
