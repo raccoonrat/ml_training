@@ -1,4 +1,0 @@
-step,task_id,task_type,gpu,precision,batch_size,execution_time,energy_consumption,performance_metric
-1,vision_resnet50,vision,3,fp32,64,20.0,100.0,0.05
-2,language_bert,language,1,bfloat16,16,5.25,26.25,0.19047619047619047
-3,vision_efficientnet,vision,3,int8,128,16.0,80.0,0.0625
