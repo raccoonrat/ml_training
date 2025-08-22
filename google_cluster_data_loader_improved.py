@@ -112,7 +112,7 @@ class GoogleClusterDataLoaderImproved:
         np.random.seed(42)
         
         if data_type == 'task_events':
-            n_samples = 10000
+            n_samples = 50000  # 增加样本数量
             data = {
                 'timestamp': np.random.randint(0, 86400, n_samples),
                 'missing_info': np.random.randint(0, 2, n_samples),
@@ -129,7 +129,7 @@ class GoogleClusterDataLoaderImproved:
                 'different_machines_restriction': np.random.choice([0, 1], n_samples)
             }
         elif data_type == 'task_usage':
-            n_samples = 15000
+            n_samples = 100000  # 增加样本数量以模拟真实数据规模
             data = {
                 'start_time': np.random.randint(0, 86400, n_samples),
                 'end_time': np.random.randint(0, 86400, n_samples),
@@ -154,7 +154,7 @@ class GoogleClusterDataLoaderImproved:
                 'sampled_cpu_usage': np.random.uniform(0.0, 1.0, n_samples)
             }
         elif data_type == 'machine_events':
-            n_samples = 5000
+            n_samples = 20000  # 增加样本数量
             data = {
                 'timestamp': np.random.randint(0, 86400, n_samples),
                 'machine_id': np.random.randint(1, 500, n_samples),

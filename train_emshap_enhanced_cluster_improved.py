@@ -41,10 +41,10 @@ def load_google_cluster_data(data_types: list = None, force_download: bool = Fal
     # 合并数据
     merged_data = loader.merge_cluster_data(cluster_data)
     
-    # 预处理数据
+    # 使用更大的输入维度以捕获更多特征
     features, targets = loader.preprocess_cluster_data_for_emshap(
         merged_data, 
-        input_dim=64,
+        input_dim=128,  # 增加输入维度
         target_column='cpu_rate'
     )
     
@@ -330,7 +330,7 @@ def main():
                        help='Output directory')
     parser.add_argument('--device', type=str, default='auto',
                        help='Device (auto/cpu/cuda)')
-    parser.add_argument('--num-epochs', type=int, default=5,
+    parser.add_argument('--num-epochs', type=int, default=100,
                        help='Number of training epochs')
     
     args = parser.parse_args()
@@ -345,18 +345,18 @@ def main():
     # 加载配置
     config = {
         'device': args.device,
-        'learning_rate': 5e-4,
-        'weight_decay': 1e-3,
-        'batch_size': 64,
-        'num_epochs': 50,  # 快速测试
-        'patience': 3,
+        'learning_rate': 1e-4,  # 降低学习率以获得更稳定的训练
+        'weight_decay': 1e-4,   # 减少正则化
+        'batch_size': 128,      # 增大批次大小
+        'num_epochs': args.num_epochs,  # 使用命令行参数
+        'patience': 15,         # 增加早停耐心
         'test_size': 0.2,
-        'gru_hidden_dim': 128,
+        'gru_hidden_dim': 256,  # 增大隐藏层维度
         'context_dim': args.context_dim,
-        'energy_hidden_dims': [256, 128, 64],
-        'gru_layers': 3,
-        'dropout_rate': 0.2,
-        'shapley_samples': 10,  # 快速测试
+        'energy_hidden_dims': [512, 256, 128],  # 增大能量网络
+        'gru_layers': 4,        # 增加GRU层数
+        'dropout_rate': 0.3,    # 增加dropout
+        'shapley_samples': 100, # 增加Shapley值采样数
         'save_dir': 'checkpoints'
     }
     
