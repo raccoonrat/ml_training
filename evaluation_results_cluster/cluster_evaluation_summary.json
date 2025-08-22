@@ -2,76 +2,76 @@
   "model_info": {
     "input_dim": 64,
     "num_parameters": 1170691,
-    "best_val_loss": 1.1930723748593392e-05
+    "best_val_loss": 8.943511041233e-06
   },
   "feature_importance": [
     {
-      "feature": "local_disk_space_usage",
-      "importance": 0.009795984253287315
-    },
-    {
-      "feature": "memory",
-      "importance": 0.009643826633691788
-    },
-    {
-      "feature": "cpu",
-      "importance": 0.00823593232780695
-    },
-    {
       "feature": "cycles_per_instruction",
-      "importance": 0.007661124691367149
-    },
-    {
-      "feature": "assigned_memory_usage",
-      "importance": 0.007390686776489019
-    },
-    {
-      "feature": "memory_accesses_per_instruction",
-      "importance": 0.007240453269332647
-    },
-    {
-      "feature": "max_disk_io_time",
-      "importance": 0.00621436070650816
+      "importance": 0.02712026983499527
     },
     {
       "feature": "disk_io_time",
-      "importance": 0.005731205455958843
-    },
-    {
-      "feature": "max_memory_usage",
-      "importance": 0.005449097603559494
-    },
-    {
-      "feature": "aggregation_type",
-      "importance": 0.005440067034214735
-    },
-    {
-      "feature": "unmapped_page_cache",
-      "importance": 0.004692469257861376
-    },
-    {
-      "feature": "max_cpu_rate",
-      "importance": 0.00425704987719655
+      "importance": 0.016291476786136627
     },
     {
       "feature": "sampled_cpu_usage",
-      "importance": 0.004202481359243393
+      "importance": 0.014396763406693935
+    },
+    {
+      "feature": "memory",
+      "importance": 0.013694164343178272
+    },
+    {
+      "feature": "assigned_memory_usage",
+      "importance": 0.012294992804527283
     },
     {
       "feature": "canonical_memory_usage",
-      "importance": 0.0038990394677966833
-    },
-    {
-      "feature": "total_page_cache",
-      "importance": 0.0035447843838483095
+      "importance": 0.011399354785680771
     },
     {
       "feature": "sample_portion",
-      "importance": 0.0030031756032258272
+      "importance": 0.009382040239870548
+    },
+    {
+      "feature": "max_cpu_rate",
+      "importance": 0.008724138140678406
+    },
+    {
+      "feature": "max_disk_io_time",
+      "importance": 0.008507771417498589
+    },
+    {
+      "feature": "unmapped_page_cache",
+      "importance": 0.007327835075557232
+    },
+    {
+      "feature": "local_disk_space_usage",
+      "importance": 0.006750514730811119
+    },
+    {
+      "feature": "max_memory_usage",
+      "importance": 0.006462549790740013
     },
     {
       "feature": "max_local_disk_space_usage",
-      "importance": 0.0028856766875833273
+      "importance": 0.005809609778225422
+    },
+    {
+      "feature": "cpu",
+      "importance": 0.005710638593882322
+    },
+    {
+      "feature": "memory_accesses_per_instruction",
+      "importance": 0.00532681867480278
+    },
+    {
+      "feature": "aggregation_type",
+      "importance": 0.00494232214987278
+    },
+    {
+      "feature": "total_page_cache",
+      "importance": 0.004077115096151829
     },
     {
       "feature": "padding_29",
@@ -264,32 +264,32 @@
   ],
   "training_history": {
     "energy_loss": [
-      0.21408317909585906,
-      0.0010656187350445605,
-      0.00041899165769288454,
-      0.00034611935010848646,
-      0.0003206631135594278
+      0.18912681487284877,
+      0.000920339283766225,
+      0.0004646628461914395,
+      0.00022437725864948973,
+      0.00026821017239312143
     ],
     "kl_loss": [
-      0.01906885270108568,
-      3.31893246224586e-05,
-      1.9702188512112233e-05,
-      2.4398907702019874e-05,
-      1.66092464264403e-05
+      0.019383655742127845,
+      3.7639382037710633e-05,
+      3.525123317190941e-05,
+      2.004380555863076e-05,
+      2.0160478480318758e-05
     ],
     "total_loss": [
-      0.21599006509913646,
-      0.0010689376674448833,
-      0.0004209618764821727,
-      0.0003485592404761887,
-      0.00032232403456409304
+      0.19106518086064558,
+      0.000924103220545766,
+      0.0004681879696324765,
+      0.00022638163894992024,
+      0.0002702262188788464
     ],
     "val_loss": [
-      0.00013702597030676268,
-      5.270945280728406e-05,
-      2.5672084565814387e-05,
-      1.7408728339471555e-05,
-      1.1930723748593392e-05
+      8.698308978482407e-05,
+      4.006680172367735e-05,
+      1.9664153637193598e-05,
+      1.1092206748682966e-05,
+      8.943511041233e-06
     ],
     "learning_rate": [
       0.0005,

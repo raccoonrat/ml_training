@@ -134,23 +134,23 @@ def evaluate_cluster_emshap_model(trainer: EMSHAPTrainer, test_features: np.ndar
     Returns:
         评估结果
     """
-    logger.info("开始Google Cluster Data EMSHAP模型评估...")
+    logger.info("Starting Google Cluster Data EMSHAP model evaluation...")
     
-    # 计算Shapley值
-    logger.info("计算Shapley值...")
+    # Calculate Shapley values
+    logger.info("Calculating Shapley values...")
     shapley_values = trainer.compute_shapley_values(
         test_features, 
         num_samples=config.get('shapley_samples', 100)  # 减少样本数以加快速度
     )
     
-    # 计算特征重要性
+    # Calculate feature importance
     feature_importance = np.mean(np.abs(shapley_values), axis=0)
     
-    # 获取特征名称
+    # Get feature names
     feature_names = loader.feature_mapping.get('feature_columns', 
                                              [f'feature_{i}' for i in range(len(feature_importance))])
     
-    # 创建评估结果
+    # Create evaluation results
     evaluation_results = {
         'shapley_values': shapley_values,
         'feature_importance': feature_importance,
@@ -160,8 +160,8 @@ def evaluate_cluster_emshap_model(trainer: EMSHAPTrainer, test_features: np.ndar
         'loader_mapping': loader.feature_mapping
     }
     
-    # 打印特征重要性排名
-    logger.info("Google Cluster Data特征重要性排名:")
+    # Print feature importance ranking
+    logger.info("Google Cluster Data Feature Importance Ranking:")
     importance_ranking = sorted(
         zip(feature_names, feature_importance),
         key=lambda x: x[1],
@@ -186,12 +186,12 @@ def visualize_cluster_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     """
     os.makedirs(save_dir, exist_ok=True)
     
-    # 绘制训练历史
-    logger.info("绘制训练历史...")
+    # Plot training history
+    logger.info("Plotting training history...")
     trainer.plot_training_history(os.path.join(save_dir, 'cluster_training_history.png'))
     
-    # 绘制特征重要性
-    logger.info("绘制特征重要性...")
+    # Plot feature importance
+    logger.info("Plotting feature importance...")
     feature_importance = evaluation_results['feature_importance']
     feature_names = evaluation_results['feature_names']
     
@@ -199,14 +199,14 @@ def visualize_cluster_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     top_features = feature_importance.argsort()[-20:][::-1]
     plt.barh(range(len(top_features)), feature_importance[top_features])
     plt.yticks(range(len(top_features)), [feature_names[i] for i in top_features])
-    plt.xlabel('特征重要性 (Shapley值)')
-    plt.title('Google Cluster Data - 前20个重要特征 (EMSHAP)')
+    plt.xlabel('Feature Importance (Shapley Values)')
+    plt.title('Google Cluster Data - Top 20 Important Features (EMSHAP)')
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, 'cluster_feature_importance.png'), dpi=300, bbox_inches='tight')
     plt.close()
     
-    # 绘制Shapley值分布
-    logger.info("绘制Shapley值分布...")
+    # Plot Shapley value distribution
+    logger.info("Plotting Shapley value distribution...")
     shapley_values = evaluation_results['shapley_values']
     
     fig, axes = plt.subplots(2, 3, figsize=(18, 12))
@@ -217,17 +217,17 @@ def visualize_cluster_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     
     for i, feature_idx in enumerate(top_6_features):
         axes[i].hist(shapley_values[:, feature_idx], bins=30, alpha=0.7, edgecolor='black')
-        axes[i].set_title(f'Shapley值: {feature_names[feature_idx]}')
-        axes[i].set_xlabel('Shapley值')
-        axes[i].set_ylabel('频次')
+        axes[i].set_title(f'Shapley Values: {feature_names[feature_idx]}')
+        axes[i].set_xlabel('Shapley Values')
+        axes[i].set_ylabel('Frequency')
         axes[i].grid(True, alpha=0.3)
     
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, 'cluster_shapley_distribution.png'), dpi=300, bbox_inches='tight')
     plt.close()
     
-    # 绘制特征相关性热图
-    logger.info("绘制特征相关性热图...")
+    # Plot feature correlation heatmap
+    logger.info("Plotting feature correlation heatmap...")
     test_features = evaluation_results['test_features']
     feature_df = pd.DataFrame(test_features, columns=feature_names)
     correlation_matrix = feature_df.corr()
@@ -236,13 +236,13 @@ def visualize_cluster_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     mask = np.triu(np.ones_like(correlation_matrix, dtype=bool))
     sns.heatmap(correlation_matrix, mask=mask, annot=True, cmap='coolwarm', center=0,
                 square=True, linewidths=0.5, cbar_kws={"shrink": .8}, fmt='.2f')
-    plt.title('Google Cluster Data - 特征相关性矩阵')
+    plt.title('Google Cluster Data - Feature Correlation Matrix')
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, 'cluster_feature_correlation.png'), dpi=300, bbox_inches='tight')
     plt.close()
     
-    # 绘制CPU使用率预测结果
-    logger.info("绘制CPU使用率预测结果...")
+    # Plot CPU usage prediction results
+    logger.info("Plotting CPU usage prediction results...")
     test_labels = evaluation_results['test_labels']
     
     # 使用模型进行预测
@@ -255,15 +255,15 @@ def visualize_cluster_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     plt.figure(figsize=(12, 8))
     plt.scatter(test_labels.flatten(), predictions.flatten(), alpha=0.5)
     plt.plot([test_labels.min(), test_labels.max()], [test_labels.min(), test_labels.max()], 'r--', lw=2)
-    plt.xlabel('实际CPU使用率')
-    plt.ylabel('预测CPU使用率')
-    plt.title('Google Cluster Data - CPU使用率预测结果')
+    plt.xlabel('Actual CPU Usage')
+    plt.ylabel('Predicted CPU Usage')
+    plt.title('Google Cluster Data - CPU Usage Prediction Results')
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig(os.path.join(save_dir, 'cluster_cpu_prediction.png'), dpi=300, bbox_inches='tight')
     plt.close()
     
-    logger.info(f"Google Cluster Data可视化结果已保存到: {save_dir}")
+    logger.info(f"Google Cluster Data visualization results saved to: {save_dir}")
 
 
 def save_cluster_results(trainer: EMSHAPTrainer, evaluation_results: dict, 
@@ -311,7 +311,7 @@ def save_cluster_results(trainer: EMSHAPTrainer, evaluation_results: dict,
     with open(os.path.join(save_dir, 'cluster_evaluation_summary.json'), 'w') as f:
         json.dump(results_summary, f, indent=2, default=str)
     
-    logger.info(f"Google Cluster Data结果已保存到: {save_dir}")
+    logger.info(f"Google Cluster Data results saved to: {save_dir}")
 
 
 def main():
@@ -325,17 +325,19 @@ def main():
     parser.add_argument('--context-dim', type=int, default=64,
                        help='上下文向量维度')
     parser.add_argument('--target-column', type=str, default='cpu_rate',
-                       help='目标列名')
+                       help='Target column name')
     parser.add_argument('--output-dir', type=str, default='evaluation_results_cluster',
-                       help='输出目录')
+                       help='Output directory')
     parser.add_argument('--device', type=str, default='auto',
-                       help='设备 (auto/cpu/cuda)')
+                       help='Device (auto/cpu/cuda)')
+    parser.add_argument('--num-epochs', type=int, default=5,
+                       help='Number of training epochs')
     
     args = parser.parse_args()
     
     # 设置日志
     setup_logging()
-    logger.info("开始使用Google Cluster Data训练EMSHAP增强模型（改进版本）")
+    logger.info("Starting Google Cluster Data EMSHAP enhanced model training (improved version)")
     
     # 创建目录
     create_directories(['checkpoints', 'logs', args.output_dir, 'data'])
@@ -346,7 +348,7 @@ def main():
         'learning_rate': 5e-4,
         'weight_decay': 1e-3,
         'batch_size': 64,
-        'num_epochs': 5,  # 快速测试
+        'num_epochs': 50,  # 快速测试
         'patience': 3,
         'test_size': 0.2,
         'gru_hidden_dim': 128,
@@ -358,29 +360,29 @@ def main():
         'save_dir': 'checkpoints'
     }
     
-    # 1. 加载Google Cluster Data
-    logger.info(f"加载Google Cluster Data: {args.data_types}")
+    # 1. Load Google Cluster Data
+    logger.info(f"Loading Google Cluster Data: {args.data_types}")
     features, targets, loader = load_google_cluster_data(args.data_types)
     
-    # 2. 创建模型
-    logger.info("创建EMSHAP模型...")
+    # 2. Create model
+    logger.info("Creating EMSHAP model...")
     model = create_emshap_model_for_cluster_data(len(loader.feature_mapping['feature_columns']), config)
     
-    # 3. 训练模型
-    logger.info("训练EMSHAP模型...")
+    # 3. Train model
+    logger.info("Training EMSHAP model...")
     trainer = train_emshap_with_cluster_data(model, features, targets, config)
     
-    # 4. 评估模型
-    logger.info("评估EMSHAP模型...")
+    # 4. Evaluate model
+    logger.info("Evaluating EMSHAP model...")
     evaluation_results = evaluate_cluster_emshap_model(trainer, features, targets, loader, config)
     
-    # 5. 可视化结果
+    # 5. Visualize results
     visualize_cluster_results(trainer, evaluation_results, args.output_dir)
     
-    # 6. 保存结果
+    # 6. Save results
     save_cluster_results(trainer, evaluation_results, args.output_dir)
     
-    logger.info("Google Cluster Data EMSHAP增强模型训练完成！")
+    logger.info("Google Cluster Data EMSHAP enhanced model training completed!")
 
 
 if __name__ == "__main__":
