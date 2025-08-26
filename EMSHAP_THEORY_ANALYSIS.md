@@ -1,6 +1,6 @@
 # EMSHAP理论分析与实现
 
-## 1. 论文核心思想
+## 1. 核心思想
 
 ### 1.1 研究背景
 EMSHAP (Energy-Based Model for Accurate Estimation of Shapley Values) 是一种基于能量模型的Shapley值估计方法，旨在解决传统Shapley值计算中的计算复杂性和精度问题。
